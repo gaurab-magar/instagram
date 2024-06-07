@@ -7,7 +7,7 @@ import Image from 'next/image';
 const MiniProfile = () => {
     const { data : session } = useSession();
   return (
-    <div className='border flex items-center justify-between mt-14 p-2'>
+    <div className='flex items-center justify-between mt-5 p-2'>
         <div className='flex items-center justify-center'>
             <Image src={session?.user?.image || '/insta.png'} alt='profileimage' width={100} height={100} className='w-16 h-16 rounded-full p-2'/>
             <div>
