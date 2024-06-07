@@ -94,6 +94,7 @@ const Navbar = () => {
       async function handleSubmit(){
         setPostUploading(true);
         const docRef = await addDoc(collection(db,'posts'),{
+            username : session.user.username,
             caption,
             profileImg: session.user.image,
             image: imageFileUrl,
@@ -145,7 +146,7 @@ const Navbar = () => {
                 <input hidden ref={filePickerRef} type='file' accept='image/*' onChange={addImageToPost} />
                 <input onChange={(e) => setCaption(e.target.value)} type='text' className='focus:outline-none text-center m-4 w-full' placeholder='Please enter your caption..' maxLength='150' />
                 {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
-                <button onClick={handleSubmit} className='w-full rounded-md shadow-xl disabled:bg-pink-200 font-semibold bg-pink-600 text-white py-1 hover:brightness-105'>Upload Post</button>
+                <button disabled={!selectedFile || caption.trim() === '' || postUploading } onClick={handleSubmit} className='w-full rounded-md shadow-xl disabled:bg-pink-200 font-semibold bg-pink-600 text-white py-1 hover:brightness-105'>Upload Post</button>
             </Modal>
         }
     </header>
