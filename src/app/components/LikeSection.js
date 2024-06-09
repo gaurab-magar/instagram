@@ -1,67 +1,71 @@
+'use client'
 import React, { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { FaRegHeart, FaHeart } from 'react-icons/fa';
 import { collection, deleteDoc, doc, getFirestore, onSnapshot, setDoc } from 'firebase/firestore';
+import { db } from '../../firebase'; // Ensure the correct import path
 
-const LikeSection = ({ id }) => {
-    const { data: session } = useSession();
-    const [hasLiked, setHasLiked] = useState(false);
-    const [likes, setLikes] = useState([]);
-    const db = getFirestore();
+function LikeSection({id}) {
+    
+    const {data:session} = useSession();
+    const [hasLiked , setHasLiked] = useState(false);
+    const [likes,setLikes] = useState([]);
+
+    console.log(`from like section ${id}`)
+    console.log(`session from LikeSection:::${session.user.username}`)
 
     useEffect(() => {
-        const unsubscribe = onSnapshot(collection(db, 'posts', id, 'likes'), (snapshot) => {
-            const likesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setLikes(likesData);
-        });
+        if (!id) return; // Ensure id is available
+        const unsubscribe = onSnapshot(collection(db, "posts", id, "likes"),
+            (snapshot) => {
+                setLikes(snapshot.docs);
+            }
+        );
         return () => unsubscribe();
     }, [db, id]);
+    
 
     useEffect(() => {
-        if (session && likes.length > 0) {
-            const hasLiked = likes.some(like => like.uid === session.user?.uid);
-            setHasLiked(hasLiked);
-        }
+        if (!session?.user) return; // Ensure session and user are available
+        setHasLiked(likes.findIndex((like) => like.id === session.user.uid) !== -1);
     }, [likes, session]);
-
+    
     async function likePost() {
-        if (!session || !session.user?.uid) return; // Ensure user is logged in
+        if (!session?.user) {
+            console.log("User not logged in");
+            return;
+        }
+    
         try {
+            const likeRef = doc(db, "posts", id, "likes", session.user.uid);
             if (hasLiked) {
-                await deleteDoc(doc(db, 'posts', id, 'likes', session.user.uid));
+                await deleteDoc(likeRef); // Remove the like document
             } else {
-                await setDoc(doc(db, 'posts', id, 'likes', session.user.uid), {
-                    uid: session.user.uid,
-                    username: session.user.username,
-                });
+                await setDoc(likeRef, {
+                    username: session.user.username
+                }); // Add the like document
             }
-            setHasLiked(!hasLiked); // Toggle the like status
+            setHasLiked(!hasLiked); // Toggle the like status locally
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Error liking post:', error);
         }
     }
+    
+  return (
+    <div>
+        {session && (
+            <div>
+                {hasLiked ? (
+                    <FaHeart onClick={likePost} className='text-2xl hover:scale-110 transition-transform duration-200 ease-out text-red-500' />
+                ) : (
+                    <FaRegHeart onClick={likePost} className='text-2xl hover:scale-110 transition-transform duration-200 ease-out' />
+                )}
+            </div>
+        )
+        }
+    </div>
+  )
+}
 
-    return (
-        <div>
-            {session && (
-                <>
-                    <div className='flex items-center justify-between p-1 mt-2 border-t border-gray-100'>
-                        <div className='flex gap-3'>
-                            {hasLiked ? (
-                                <FaHeart onClick={likePost} className='text-2xl hover:scale-110 transition-transform duration-200 ease-out' />
-                            ) : (
-                                <FaRegHeart onClick={likePost} className='text-2xl hover:scale-110 transition-transform duration-200 ease-out' />
-                            )}
-                            {/* <FaRegComment className='text-2xl hover:scale-110 transition-transform duration-200 ease-out' />
-                            <RiSendPlaneFill className='text-2xl hover:scale-110 transition-transform duration-200 ease-out' /> */}
-                        </div>
-                        {/* <MdOutlineSaveAlt className='text-2xl hover:scale-110 transition-transform duration-200 ease-out' /> */}
-                    </div>
-                    <p className='text-gray-400 pl-2'>{likes.length} likes</p>
-                </>
-            )}
-        </div>
-    );
-};
+export default LikeSection
 
-export default LikeSection;
