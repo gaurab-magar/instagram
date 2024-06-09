@@ -12,9 +12,9 @@ import { TiCamera } from "react-icons/ti";
 import Modal from 'react-modal';
 import { IoIosCloseCircle } from "react-icons/io";
 
-import { db , storage , app } from '@/firebase';
+import { db , app } from '@/firebase';
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from 'firebase/storage';
-import { Timestamp, addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 
 
 
@@ -24,7 +24,6 @@ import { Timestamp, addDoc, collection, serverTimestamp } from 'firebase/firesto
 
 const Navbar = () => {
     const {data:session} = useSession();
-    console.log(session);
     const [isOpenModal , setOpenModal] = useState(false);
 
     const [selectedFile, setSelectedFile] = useState(null);
@@ -73,10 +72,8 @@ const Navbar = () => {
             'state_changed',
             (snapshot)=>{
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                console.log('upload is' + progress + '% done');
             },
             (error) => {
-                console.log(error);
                 setUploadingImgFile(false);
                 setImageFileUrl(null);
                 setSelectedFile(null);
@@ -85,7 +82,6 @@ const Navbar = () => {
                 getDownloadURL(uploadTask.snapshot.ref).then((downloadURL)=>{
                     setImageFileUrl(downloadURL);
                     setUploadingImgFile(false);
-                    console.log('file available at', downloadURL);
                 })
             }
         )

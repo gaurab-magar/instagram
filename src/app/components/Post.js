@@ -8,6 +8,7 @@ import { FaRegComment } from "react-icons/fa";
 import { RiSendPlaneFill } from "react-icons/ri";
 import { MdOutlineSaveAlt } from "react-icons/md";
 import LikeSection from './LikeSection';
+import CommentSection from './CommentSection';
 
 
 const Post = ({post}) => {
@@ -20,6 +21,7 @@ const Post = ({post}) => {
         </div>
         <Image src={post.image} alt='profileimage' width={100} height={100} className='w-full h-96 object-center rounded-sm p-1 object-cover mr-3'/>
         <LikeSection id={post.id} likes={post.likes} />
+        <CommentSection id={post.id} />
         <p className='p-5 truncate'>
             <span className='font-bold mr-2'>{post.username}</span>
             {post.caption}
